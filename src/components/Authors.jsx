@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
+import Select from 'react-select'
 import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
 
 const Authors = ({ show }) => {
@@ -11,32 +11,37 @@ const Authors = ({ show }) => {
     refetchQueries: [{ query: ALL_AUTHORS }]
   })
 
-  const [selectedName, setSelectedName] = useState('')
-  const [bornYear, setBornYear]         = useState('')
+  const [selectedOption, setSelectedOption] = useState(null)
+  const [bornYear, setBornYear]             = useState('')
 
   if (loading) return <p>Loading authors…</p>
-  if (error)   return <p style={{ color: 'red' }}>{error.message}</p>
+  if (error)   return <p style={{ color: 'red' }}>Error: {error.message}</p>
 
   const authors = data.allAuthors
 
-  if (selectedName === '' && authors.length > 0) {
-    setSelectedName(authors[0].name)
-  }
+  const options = authors.map(a => ({
+    value: a.name,
+    label: a.name
+  }))
 
-  const submit = async e => {
+  const submit = async (e) => {
     e.preventDefault()
+    if (!selectedOption) return
+
     await editAuthor({
       variables: {
-        name: selectedName,
+        name:      selectedOption.value,
         setBornTo: Number(bornYear)
       }
     })
     setBornYear('')
+    setSelectedOption(null)
   }
 
   return (
     <div>
       <h2>Authors</h2>
+
       <table>
         <thead>
           <tr>
@@ -46,45 +51,42 @@ const Authors = ({ show }) => {
           </tr>
         </thead>
         <tbody>
-          {authors.map(a => (
+          {authors.map(a =>
             <tr key={a.id}>
               <td>{a.name}</td>
               <td>{a.born ?? '–'}</td>
               <td>{a.bookCount}</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
       <h3>Set birth year</h3>
       <form onSubmit={submit}>
-        <div>
-          <label>
-            Author&nbsp;
-            <select
-              value={selectedName}
-              onChange={(e) => setSelectedName(e.target.value)}
-            >
-              {authors.map(a =>
-                <option key={a.id} value={a.name}>{a.name}</option>
-              )}
-            </select>
-          </label>
+        <div style={{ marginBottom: '0.5rem', width: '200px' }}>
+          <Select
+            placeholder="Choose author…"
+            options={options}
+            value={selectedOption}
+            onChange={setSelectedOption}
+            isClearable
+          />
         </div>
-        <div>
-          <label>
-            Born&nbsp;
-            <input
-              type="number"
-              value={bornYear}
-              onChange={(e) => setBornYear(e.target.value)}
-            />
-          </label>
+        <div style={{ marginBottom: '0.5rem' }}>
+          <input
+            type="number"
+            placeholder="Year of birth"
+            value={bornYear}
+            onChange={(e) => setBornYear(e.target.value)}
+          />
         </div>
-        <button type="submit">Update author</button>
+        <button type="submit" disabled={!selectedOption || !bornYear}>
+          Update author
+        </button>
       </form>
     </div>
   )
 }
 
 export default Authors
+
