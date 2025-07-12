@@ -1,23 +1,41 @@
-const Authors = (props) => {
-  if (!props.show) {
-    return null
+import React from 'react'
+import { useQuery, gql } from '@apollo/client'
+
+const ALL_AUTHORS = gql`
+  query {
+    allAuthors {
+      id
+      name
+      born
+      bookCount
+    }
   }
-  const authors = []
+`
+
+const Authors = ({ show }) => {
+  if (!show) return null
+
+  const { loading, error, data } = useQuery(ALL_AUTHORS)
+
+  if (loading) return <p>Loading authors…</p>
+  if (error)   return <p style={{ color: 'red' }}>Error: {error.message}</p>
 
   return (
     <div>
-      <h2>authors</h2>
+      <h2>Authors</h2>
       <table>
-        <tbody>
+        <thead>
           <tr>
-            <th></th>
-            <th>born</th>
-            <th>books</th>
+            <th align="left">Name</th>
+            <th align="left">Born</th>
+            <th align="left">Books</th>
           </tr>
-          {authors.map((a) => (
-            <tr key={a.name}>
+        </thead>
+        <tbody>
+          {data.allAuthors.map(a => (
+            <tr key={a.id}>
               <td>{a.name}</td>
-              <td>{a.born}</td>
+              <td>{a.born ?? '–'}</td>
               <td>{a.bookCount}</td>
             </tr>
           ))}
