@@ -7,6 +7,8 @@ import EditAuthor from './components/EditAuthor'
 import LoginForm  from './components/LoginForm'
 import Notify     from './components/Notify'
 import { ALL_AUTHORS, ALL_BOOKS } from './queries'
+import Recommendations from './components/Recommendations'
+
 
 const App = () => {
   const [page, setPage]       = useState('authors')
@@ -38,6 +40,7 @@ const App = () => {
           ? <>
               <button onClick={() => setPage('add')}>add book</button>
               <button onClick={() => setPage('edit')}>edit author</button>
+              <button onClick={() => setPage('recommend')}>recommendations</button>
               <button onClick={logout}>logout</button>
             </>
           : <button onClick={() => setPage('login')}>login</button>
@@ -48,6 +51,7 @@ const App = () => {
       {page === 'authors'   && <Authors show={true}/>}
       {page === 'books'     && <Books show={true}/>}
       {page === 'add'       && <NewBook show={true}/>}
+      {page === 'recommend' && <Recommendations show={true} />}
       {page === 'edit'      && <EditAuthor show={true}/>}
     </div>
   )
